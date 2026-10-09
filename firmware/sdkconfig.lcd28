@@ -1,0 +1,32 @@
+# pocket-tank — the ESP32-S3-Touch-LCD-2.8-V2 (LCD28) board overlay.
+#
+# Layered after sdkconfig.defaults:
+#   idf.py -B build-lcd28 \
+#          -DSDKCONFIG=build-lcd28/sdkconfig \
+#          -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.lcd28" build
+#
+# The SoC is the same ESP32-S3R8 the AMOLED builds target (8 MB octal PSRAM,
+# 16 MB flash), so every memory/flash/partition default in sdkconfig.defaults
+# carries over unchanged. Only the board and its peripherals change here.
+
+# ---- this board ----
+CONFIG_POCKET_TANK_LCD28=y
+
+# M1: the ST7789T panel is up (display_port_st7789.c). M2: the CST328 touch is
+# up too (touch_port_cst328.c). M4: the PCM5101 I2S DAC plays the sound bank
+# (audio_port_pcm5101.c). The battery + PWR key are real (battery_port_adc.c).
+CONFIG_POCKET_TANK_DISPLAY_SH8601=n
+CONFIG_POCKET_TANK_TOUCH_FT3168=n
+CONFIG_POCKET_TANK_AUDIO_ES8311=n
+CONFIG_POCKET_TANK_DISPLAY_ST7789=y
+CONFIG_POCKET_TANK_TOUCH_CST328=y
+CONFIG_POCKET_TANK_AUDIO_PCM5101=y
+
+# ---- local cable build is unsigned ----
+# sdkconfig.defaults signs every image with firmware/keys/ota_signing_key.pem
+# (never committed, tools/ota_key.sh). On this machine there is no key, so the
+# signing step is switched off to get a bootable image; re-enable it for a
+# release/OTA build once the key is present.
+CONFIG_SECURE_SIGNED_APPS_NO_SECURE_BOOT=n
+CONFIG_SECURE_SIGNED_ON_UPDATE_NO_SECURE_BOOT=n
+CONFIG_SECURE_BOOT_BUILD_SIGNED_BINARIES=n

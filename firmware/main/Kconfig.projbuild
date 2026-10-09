@@ -1,9 +1,33 @@
 menu "pocket-tank"
+    config POCKET_TANK_LCD28
+        bool "The ESP32-S3-Touch-LCD-2.8-V2 (ST7789T + CST328)"
+        default n
+        help
+            The Waveshare ESP32-S3-Touch-LCD-2.8-V2: a 240x320 SPI ST7789T
+            panel, a CST328 touch controller, a PCM5101 I2S DAC, an ADC
+            battery meter and a GPIO power-hold latch. Selects the LCD28
+            board build (sdkconfig.lcd28); see POCKET_TANK_PORT_PLAN.md.
     config POCKET_TANK_DISPLAY_SH8601
         bool "Drive the Waveshare 1.8in AMOLED (SH8601 / CO5300 over QSPI)"
         default n
         help
             Enable for the real board. Off = stub display port (QEMU / compile-only).
+    config POCKET_TANK_DISPLAY_ST7789
+        bool "Drive the ST7789T panel over SPI3 (LCD28)"
+        default n
+        help
+            The LCD28 display port (display_port_st7789.c + Vernon_ST7789T.c).
+            Off = stub display port.
+    config POCKET_TANK_TOUCH_CST328
+        bool "Read the CST328 capacitive touch (LCD28)"
+        default n
+        help
+            The LCD28 touch port (touch_port_cst328.c). Off = stub touch port.
+    config POCKET_TANK_AUDIO_PCM5101
+        bool "Play the sound bank through the PCM5101 I2S DAC (LCD28)"
+        default n
+        help
+            The LCD28 audio port (audio_port_pcm5101.c). Off = stub audio port.
     config POCKET_TANK_ROUND
         bool "The ROUND build: a 466 px bowl for the Waveshare ESP32-S3-Touch-AMOLED-1.75C"
         default n

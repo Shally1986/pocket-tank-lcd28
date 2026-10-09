@@ -26,6 +26,42 @@
  * vibration motor (GPIO 18, fed from ALDO3) the tank does not use. */
 #ifndef BOARD_PINS_H
 #define BOARD_PINS_H
+
+/* ---- the ESP32-S3-Touch-LCD-2.8-V2 (Waveshare; ST7789T + CST328) ----
+ * A different board family from the AMOLED ones above: an SPI ST7789T panel,
+ * a CST328 touch controller on its own I2C bus, a PCM5101 I2S DAC (no codec),
+ * a plain ADC battery meter and a GPIO power-hold latch. The pins below are
+ * the ones POCKET_TANK_PORT_PLAN.md section 3 lists; the display/touch/audio
+ * ports use them from M1 on. Selected by CONFIG_POCKET_TANK_LCD28. */
+#if defined(CONFIG_POCKET_TANK_LCD28)
+#define L28_PIN_LCD_SCLK  40
+#define L28_PIN_LCD_MOSI  45
+#define L28_PIN_LCD_DC    41
+#define L28_PIN_LCD_CS    42
+#define L28_PIN_LCD_RST   39
+#define L28_PIN_LCD_BL    5
+#define L28_PIN_I2C_SCL   10        /* main I2C bus (port 0): RTC + IMU */
+#define L28_PIN_I2C_SDA   11
+#define L28_PIN_TP_SCL    3         /* touch I2C bus (port 1, owned by the touch port) */
+#define L28_PIN_TP_SDA    1
+#define L28_PIN_TP_INT    4         /* unused: the touch port polls */
+#define L28_PIN_TP_RST    2
+#define L28_PIN_I2S_BCLK  48
+#define L28_PIN_I2S_WS    38
+#define L28_PIN_I2S_DOUT  47        /* no MCLK on this board */
+#define L28_PIN_BAT_ADC   8         /* ADC1_CH7 */
+#define L28_PIN_KEY       6         /* PWR key, active low */
+#define L28_PIN_HOLD      7         /* power-hold latch: high = battery connected */
+#define L28_PANEL_W       240       /* native portrait */
+#define L28_PANEL_H       320
+#define L28_I2C_ADDR_CST328  0x1A
+#define L28_I2C_ADDR_CST3530 0x58   /* fallback touch controller */
+
+/* the power-hold latch, driven as the very first line of app_main
+ * (battery_port_adc.c) */
+void board_early_init(void);
+#endif
+
 #define PIN_LCD_CS        12
 #define PIN_LCD_PCLK      11
 #define PIN_LCD_DATA0     4

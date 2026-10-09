@@ -22,3 +22,6 @@ endif()
 if(CONFIG_POCKET_TANK_WATCH)   # the watch's 410 x 502 portrait tank
     target_compile_definitions(${COMPONENT_LIB} PUBLIC TANK_WATCH)
 endif()
+if(CONFIG_POCKET_TANK_LCD28)   # the ESP32-S3-Touch-LCD-2.8 board id (version.h)
+    target_compile_definitions(${COMPONENT_LIB} PUBLIC TANK_LCD28)
+endif()

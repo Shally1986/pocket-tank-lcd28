@@ -49,6 +49,10 @@ bool board_has_expander(void);                  /* the 1.8, positively: its IO e
  * its 448 x 368 frame turned 90 degrees, centred in the glass. */
 bool board_is_watch(void);
 int  board_pwr_sense_pin(void);                 /* the GPIO that is high while the PWR key is down (the 1.75C: 3, the watch: 10), -1 = none */
+/* M6: the PWR key GPIO for a deep-sleep wake on boards with no PMIC sense
+ * line (the LCD28: 6, active low, the ext1 source its deep sleep wakes on;
+ * BOOT stays armed as a backup). -1 = the board wakes on PWR_SENSE / PMIC. */
+int  board_key_wake_pin(void);
 /* a portrait panel bigger than the frame (the rectangle image on the watch):
  * where the frame's corner sits on the panel, in panel px (0, 0 otherwise) */
 void display_port_frame_origin(int *px, int *py);

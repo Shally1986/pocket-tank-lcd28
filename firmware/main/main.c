@@ -68,8 +68,8 @@ static bool s_rtc;                         /* an RTC chip answered: the wall clo
 #define PWR_SENSE ((gpio_num_t)board_pwr_sense_pin())   /* the round board and the watch: a line that is high while the PWR key is down */
 static bool pwr_sensed(void) { return board_pwr_sense_pin() >= 0; }
 static bool pwr_sense_down(void) { return pwr_sensed() && gpio_get_level(PWR_SENSE); }
-#ifdef CONFIG_POCKET_TANK_DISPLAY_SH8601
-extern i2c_master_bus_handle_t board_i2c_bus(void);
+#if defined(CONFIG_POCKET_TANK_DISPLAY_SH8601) || defined(CONFIG_POCKET_TANK_DISPLAY_ST7789)
+extern i2c_master_bus_handle_t board_i2c_bus(void);   /* the display port owns the main I2C bus */
 #else
 static i2c_master_bus_handle_t board_i2c_bus(void) { return NULL; }
 #endif
@@ -394,7 +394,7 @@ static void deep_sleep_now(int wake_after_s) {
         if (cfg & SLEEP_PANEL) display_port_deep_standby();
         if (cfg & SLEEP_IMU) imu_port_power_down();
         if (cfg & SLEEP_BUS) display_port_deep_sleep_bus();   /* after the deep standby: that command needs the bus */
-        char why[8]; snprintf(why, sizeof why, "deep %d", tp_slept ? cfg : cfg & ~SLEEP_TOUCH);   /* what took: the log is gone with the USB port */
+        char why[24]; snprintf(why, sizeof why, "deep %d", tp_slept ? cfg : cfg & ~SLEEP_TOUCH);   /* what took: the log is gone with the USB port */
         batlog_add(battery_pct(), battery_port_vbat_mv(), 0, true, why);   /* mirrored to NVS: the wake reads the night's cost back */
         ESP_LOGI(TAG, "deep sleep (the PWR key wakes%s) | touch %s, panel %s, IMU %s (sleepcfg %d)", wake_after_s > 0 ? ", or the timer" : "",
                  tp_slept ? "asleep" : "in reset", cfg & SLEEP_PANEL ? "deep standby" : "sleep-in",
@@ -404,9 +404,19 @@ static void deep_sleep_now(int wake_after_s) {
         esp_sleep_enable_ext1_wakeup(1ULL << PWR_SENSE, ESP_EXT1_WAKEUP_ANY_HIGH);
         display_port_deep_sleep_pins(tp_slept);
     } else {
-        ESP_LOGI(TAG, "deep sleep (BOOT wakes%s)", wake_after_s > 0 ? ", or the timer" : "");
-        rtc_gpio_pullup_en(BTN_SLEEP); rtc_gpio_pulldown_dis(BTN_SLEEP);
-        esp_sleep_enable_ext0_wakeup(BTN_SLEEP, 0);
+        int key = board_key_wake_pin();
+        if (key >= 0) {                         /* the LCD28 (M6): the PWR key (GPIO6, active low) IS the wake - ext1,
+                                                   so the RTC peripherals can power down. BOOT stays armed as a backup. */
+            ESP_LOGI(TAG, "deep sleep (the PWR key wakes%s)", wake_after_s > 0 ? ", or the timer" : "");
+            rtc_gpio_pullup_en((gpio_num_t)key); rtc_gpio_pulldown_dis((gpio_num_t)key);
+            esp_sleep_enable_ext1_wakeup(1ULL << key, ESP_EXT1_WAKEUP_ANY_LOW);
+            rtc_gpio_pullup_en(BTN_SLEEP); rtc_gpio_pulldown_dis(BTN_SLEEP);
+            esp_sleep_enable_ext0_wakeup(BTN_SLEEP, 0);
+        } else {
+            ESP_LOGI(TAG, "deep sleep (BOOT wakes%s)", wake_after_s > 0 ? ", or the timer" : "");
+            rtc_gpio_pullup_en(BTN_SLEEP); rtc_gpio_pulldown_dis(BTN_SLEEP);
+            esp_sleep_enable_ext0_wakeup(BTN_SLEEP, 0);
+        }
     }
     if (wake_after_s > 0) esp_sleep_enable_timer_wakeup((int64_t)wake_after_s * 1000000);
     audio_port_deep_sleep_pins();
@@ -854,6 +864,9 @@ void device_provision_request(void) {
 }
 
 void app_main(void) {
+#ifdef CONFIG_POCKET_TANK_LCD28
+    board_early_init();                      /* hold the battery latch: MUST precede nvs_start() (plan 8.3) */
+#endif
     ESP_LOGI(TAG, "pocket-tank v%s %s (build %s) for %s boot%s", PT_RELEASE, PT_RELEASE_STAGE, version_port_string(), PT_BOARD,
              esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1 ? " (woken by button)" : "");
     gpio_config_t btn = { .pin_bit_mask = 1ULL << BTN_SLEEP, .mode = GPIO_MODE_INPUT,

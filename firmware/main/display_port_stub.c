@@ -23,6 +23,7 @@ void display_port_deep_sleep_bus(void) { }
 bool board_has_expander(void) { return true; }
 bool board_is_watch(void) { return false; }
 int  board_pwr_sense_pin(void) { return -1; }
+int  board_key_wake_pin(void) { return -1; }
 void display_port_frame_origin(int *px, int *py) { *px = 0; *py = 0; }
 void display_port_set_view(int view) { (void)view; }
 int  display_port_view(void) { return DISPLAY_VIEW_FIT; }

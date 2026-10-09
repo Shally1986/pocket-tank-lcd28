@@ -75,6 +75,7 @@ void display_port_set_inverted(bool inverted) { s_inverted = inverted; }
 bool board_is_round(void) { return s_round; }
 bool board_is_watch(void) { return s_watch; }
 int  board_pwr_sense_pin(void) { return s_round ? R_PIN_PWR_SENSE : s_watch ? W_PIN_PWR_SENSE : -1; }
+int  board_key_wake_pin(void) { return -1; }     /* the PMIC boards wake their deep sleep on PWR_SENSE (ext1 high), not a key GPIO */
 void display_port_frame_origin(int *px, int *py) { *px = s_fx; *py = s_fy; }
 /* the boards whose resets are GPIOs (the 1.75C, the watch): the pads held through a deep sleep */
 typedef struct { gpio_num_t pin; int level; } held_t;

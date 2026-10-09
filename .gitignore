@@ -12,6 +12,7 @@ model/runq4
 q4_host
 firmware/host_test/q4_host
 firmware/build/
+firmware/build-lcd28/
 firmware/sdkconfig
 firmware/sdkconfig.old
 firmware/dependencies.lock

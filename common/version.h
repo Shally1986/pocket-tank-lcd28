@@ -48,6 +48,9 @@
 #elif defined(TANK_WATCH)
 #define PT_BOARD         "watch206"
 #define PT_BOARD_NAME    "ESP32-S3-Touch-AMOLED-2.06"
+#elif defined(TANK_LCD28)
+#define PT_BOARD         "lcd28"
+#define PT_BOARD_NAME    "ESP32-S3-Touch-LCD-2.8"
 #else
 #define PT_BOARD         "amoled18"
 #define PT_BOARD_NAME    "ESP32-S3-Touch-AMOLED-1.8"
