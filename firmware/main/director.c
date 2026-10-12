@@ -22,6 +22,8 @@ bool net_port_set_manifest_url(const char *url);
 #include "display_port.h"
 #include "board_pins.h"
 #include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "brightness.h"
 #include "batlog.h"
 #include "codec_port.h"

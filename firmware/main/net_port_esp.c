@@ -186,7 +186,7 @@ static void do_connect_n(int attempts, int wait_ms) {
         ESP_LOGW(TAG, "connect attempt %d: %s (reason %d)", attempt + 1, b & EV_DISCONNECTED ? "disconnected" : "timed out", r);
         if (r == WIFI_REASON_NO_AP_FOUND) { err = NET_ERR_NO_SIGNAL; break; }
         if (r == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT || r == WIFI_REASON_AUTH_FAIL || r == WIFI_REASON_HANDSHAKE_TIMEOUT
-            || r == WIFI_REASON_AUTH_EXPIRE || r == WIFI_REASON_ASSOC_EXPIRE || r == WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY
+            || r == WIFI_REASON_AUTH_EXPIRE || r == WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY || r == WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY
             || r == WIFI_REASON_CONNECTION_FAIL) err = NET_ERR_PASSWORD;
         else err = NET_ERR_NO_SIGNAL;
         vTaskDelay(pdMS_TO_TICKS(1000 + attempt * 500));

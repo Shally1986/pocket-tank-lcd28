@@ -1,2 +1,5 @@
 dependencies:
   idf: ">=5.3"
+  # IDF 6.x moved json (the cJSON wrapper) out of the tree to the component
+  # registry; the managed component feeds main's `REQUIRES cjson`.
+  espressif/cjson: "^1.7.19"

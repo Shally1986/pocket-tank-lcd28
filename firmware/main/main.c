@@ -963,7 +963,7 @@ void app_main(void) {
        slot and the panel silently loses its pixel path (black screen). */
     if (scene && fb[0] && fb[1] != fb[0]) {
         async_memcpy_config_t amc_cfg = ASYNC_MEMCPY_DEFAULT_CONFIG();
-        amc_cfg.backlog = 4; amc_cfg.sram_trans_align = 4; amc_cfg.psram_trans_align = 64;
+        amc_cfg.backlog = 4;
         s_amc_done = xSemaphoreCreateBinary();
         if (esp_async_memcpy_install(&amc_cfg, &s_amc) != ESP_OK) {
             s_amc = NULL; ESP_LOGW(TAG, "async memcpy unavailable: CPU scene restore");

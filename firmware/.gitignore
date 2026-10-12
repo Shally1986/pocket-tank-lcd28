@@ -1,0 +1,4 @@
+# Port-side build hygiene (upstream keeps none): generated build trees and
+# IDF component-manager downloads live outside the repo history.
+build*/
+managed_components/

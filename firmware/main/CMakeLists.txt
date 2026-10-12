@@ -32,9 +32,16 @@ idf_component_register(
     SRCS ${SRCS}
     INCLUDE_DIRS "."
     REQUIRES tankcore llm esp_partition spi_flash esp_timer esp_driver_spi esp_driver_i2c esp_driver_i2s esp_driver_gpio esp_driver_ledc esp_driver_usb_serial_jtag esp_lcd esp_adc nvs_flash esp_app_format
-             esp_wifi esp_netif esp_event esp_http_client esp_https_ota app_update json mbedtls bootloader_support
+             esp_wifi esp_netif esp_event esp_http_client esp_https_ota app_update cjson mbedtls bootloader_support
     EMBED_FILES "tokenizer.bin" "../../assets/sounds/sounds.bin"
 )
+# IDF 6.x removed lcd_color_rgb_endian_t / LCD_RGB_ENDIAN_*; the vendored
+# ST7789T driver (whitelisted vendor code) still uses them. Forced include
+# (idf6_compat.h) keeps the vendor sources unmodified. C-only via generator
+# expressions: the EMBED_FILES *_bin.S objects are assembly and must not see it.
+target_compile_options(${COMPONENT_LIB} PRIVATE
+    "$<$<COMPILE_LANGUAGE:C>:-include>"
+    "$<$<COMPILE_LANGUAGE:C>:${CMAKE_CURRENT_LIST_DIR}/idf6_compat.h>")
 # the board marker (net_port_esp.c, version.h PT_BOARD_MARKER_OFFSET): nothing
 # references it - the download reads it back from flash - so it is kept by name
 # or --gc-sections drops it (ESP-IDF's "custom structure" recipe, app_image_format)

@@ -3,7 +3,7 @@
 #include "version.h"
 #include "esp_log.h"
 #include "esp_timer.h"
-#include "mbedtls/sha256.h"
+#include "psa/crypto.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -34,13 +34,19 @@ bool model_trailer_erase(const esp_partition_t *mp) {
     return mp && esp_partition_erase_range(mp, trailer_off(mp), MODEL_TRAILER_SIZE) == ESP_OK;
 }
 void model_sha256_hex(const void *p, size_t len, char out[65]) {
-    uint8_t d[32];
-    mbedtls_sha256_context c; mbedtls_sha256_init(&c);
-    mbedtls_sha256_starts(&c, 0);
-    /* 64 KB steps: the flash cache walks the mapping in order, and the
-       watchdog sees the gaps (the tank task is not running yet at boot) */
-    for (size_t o = 0; o < len; o += 65536) mbedtls_sha256_update(&c, (const uint8_t *)p + o, len - o < 65536 ? len - o : 65536);
-    mbedtls_sha256_finish(&c, d); mbedtls_sha256_free(&c);
+    uint8_t d[32]; size_t dlen = 0;
+    /* mbedTLS 4.x (IDF 6) removed the legacy mbedtls_sha256_* API; the PSA
+       streaming interface is its documented replacement. Hashing needs no
+       psa_crypto_init(). Keeps the 64 KB steps: the flash cache walks the
+       mapping in order, and the watchdog sees the gaps (the tank task is not
+       running yet at boot) */
+    psa_hash_operation_t op = PSA_HASH_OPERATION_INIT;
+    if (psa_hash_setup(&op, PSA_ALG_SHA_256) != PSA_SUCCESS) { out[0] = 0; return; }
+    for (size_t o = 0; o < len; o += 65536)
+        if (psa_hash_update(&op, (const uint8_t *)p + o, len - o < 65536 ? len - o : 65536) != PSA_SUCCESS) {
+            psa_hash_abort(&op); out[0] = 0; return;
+        }
+    if (psa_hash_finish(&op, d, sizeof d, &dlen) != PSA_SUCCESS || dlen != sizeof d) { out[0] = 0; return; }
     for (int i = 0; i < 32; i++) snprintf(out + i * 2, 3, "%02x", d[i]);
 }
 static bool hex_to_bytes(const char *hex, uint8_t *out, size_t n) {
